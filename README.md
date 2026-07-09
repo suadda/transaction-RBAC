@@ -1,58 +1,126 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sistem Pengajuan Transaksi Pengeluaran
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Aplikasi web untuk mengelola pengajuan transaksi pengeluaran dengan **workflow approval berjenjang** dan **Role Based Access Control (RBAC)**. Dibangun dengan Laravel (MVC), MySQL, dan Laravel Breeze untuk autentikasi.
 
-## About Laravel
+## Fitur Utama
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Autentikasi 5 role: **Staff, SPV, Manager, Direktur, Finance**
+- Pengajuan transaksi + upload dokumen (PDF/JPG/PNG, maks 5 MB) via Laravel Storage
+- Workflow approval dinamis sesuai kategori & nominal
+- Pengecekan budget kategori & pemrosesan pembayaran oleh Finance
+- Riwayat & timeline approval per pengajuan
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Teknologi
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- Laravel 12 (PHP 8.2+)
+- MySQL
+- Laravel Breeze (Blade)
+- Vite + Tailwind (bawaan Breeze)
 
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Instalasi
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone repository
+git clone https://github.com/suadda/transaction-RBAC.git
+cd transaction-RBAC
 
-php artisan boost:install
+# 2. Install dependency
+composer install
+npm install
+
+# 3. Konfigurasi environment
+cp .env.example .env
+php artisan key:generate
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+Edit `.env`, sesuaikan koneksi database:
 
-## Contributing
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=transaction_rbac
+DB_USERNAME=root
+DB_PASSWORD=
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+# 4. Migrasi + seed data awal (role, user, kategori, budget)
+php artisan migrate:fresh --seed
 
-## Code of Conduct
+# 5. Symlink storage agar file upload bisa diakses
+php artisan storage:link
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Menjalankan Project
 
-## Security Vulnerabilities
+Jalankan dua proses (dua terminal terpisah):
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+# Terminal 1 - server Laravel
+php artisan serve
 
-## License
+# Terminal 2 - build asset (WAJIB tetap menyala selama development)
+npm run dev
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+Buka `http://127.0.0.1:8000`.
+
+## Akun Login Testing
+
+Semua akun memakai password: **`password`**
+
+| Role     | Email               |
+|----------|---------------------|
+| Staff    | staff@test.com      |
+| SPV      | spv@test.com        |
+| Manager  | manager@test.com    |
+| Direktur | direktur@test.com   |
+| Finance  | finance@test.com    |
+
+## Struktur Database
+
+| Tabel         | Keterangan                                                        |
+|---------------|-------------------------------------------------------------------|
+| `users`       | Akun pengguna, punya `role_id`                                    |
+| `roles`       | Master role (Staff/SPV/Manager/Direktur/Finance)                 |
+| `categories`  | Master kategori pengeluaran                                       |
+| `budgets`     | Plafon budget per kategori                                        |
+| `submissions` | Pengajuan transaksi (nomor, tanggal, nominal, lampiran, status)  |
+| `approvals`   | Jejak setiap tindakan approve/reject                             |
+| `payments`    | Catatan pembayaran oleh Finance                                  |
+
+### Relasi
+
+- `roles` **1—N** `users` — satu role dimiliki banyak user.
+- `users` **1—N** `submissions` — satu user (Staff) membuat banyak pengajuan (`submissions.user_id`). Ini "Nama Pengaju".
+- `categories` **1—N** `submissions` — satu kategori dipakai banyak pengajuan (`submissions.category_id`).
+- `categories` **1—1** `budgets` — setiap kategori punya satu plafon budget (`budgets.category_id`).
+- `submissions` **1—N** `approvals` — satu pengajuan memiliki banyak riwayat approval; tiap baris mencatat `role`, `status`, dan `comment` approver (`approvals.submission_id`, `approvals.user_id`).
+- `submissions` **1—1** `payments` — satu pengajuan yang lolos menghasilkan satu pembayaran (`payments.submission_id`, `payments.paid_by`).
+
+## Workflow Approval
+
+Rantai approver ditentukan otomatis di `app/Services/WorkflowService.php`:
+
+| Kondisi                                   | Alur approver                    |
+|-------------------------------------------|----------------------------------|
+| Kategori = **PO Produk**                  | Direktur                         |
+| Bukan PO, nominal **≤ 5 juta**            | SPV                              |
+| Bukan PO, **5 juta < nominal ≤ 10 juta**  | SPV → Manager                    |
+| Bukan PO, nominal **> 10 juta**           | SPV → Manager → Direktur         |
+
+Aturan tambahan:
+- **Budget kategori tidak cukup** → status `Rejected`.
+- **Salah satu approver menolak** → status `Rejected` (alur berhenti).
+- **Seluruh approval selesai** → status `Waiting Finance`.
+- **Finance** memeriksa saldo, lalu `Paid` (cukup) atau `Rejected` (tidak cukup).
+
+### Status Pengajuan
+
+`Draft` → `Submitted` → `Waiting SPV Approval` / `Waiting Manager Approval` / `Waiting Director Approval` → `Waiting Finance` → `Paid`. Jalur gagal berakhir di `Rejected`.
+
+### Catatan Desain
+
+- **Sisa budget** dihitung sebagai `budget.amount − Σ pengajuan berstatus Paid pada kategori tsb`, bukan dengan memutasi kolom `amount`, agar audit-friendly.
+- **"Saldo" pada tahap Finance** diinterpretasikan sebagai sisa budget kategori: pembayaran hanya diproses bila sisa budget masih menutupi nominal, lalu status menjadi `Paid` (yang otomatis mengurangi sisa budget untuk pengajuan berikutnya).

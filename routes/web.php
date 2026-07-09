@@ -1,34 +1,46 @@
 <?php
 
+use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get('/', fn () => view('welcome'));
 
 Route::get('/dashboard', function () {
-    return view('dashboard');
+    return redirect()->route(match (optional(Auth::user()->role)->name) {
+        'Staff'                => 'staff.submissions.index',
+        'SPV', 'Manager', 'Direktur' => 'approval.index',
+        'Finance'              => 'finance.index',
+        default                => 'profile.edit',
+    });
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-// --- GRUP RUTE STAFF ---
+// --- STAFF ---
 Route::middleware(['auth', 'role:Staff'])->group(function () {
-    // 1. Rute GET untuk menampilkan halaman form
     Route::get('/staff/dashboard', [SubmissionController::class, 'create'])->name('staff.dashboard');
-    
-    // 2. Rute POST untuk mengirim data ke database
+    Route::get('/staff/submissions', [SubmissionController::class, 'index'])->name('staff.submissions.index');
     Route::post('/staff/submissions', [SubmissionController::class, 'store'])->name('staff.submissions.store');
+    Route::get('/staff/submissions/{submission}', [SubmissionController::class, 'show'])->name('staff.submissions.show');
 });
 
-// --- GRUP RUTE APPROVAL (Bos) ---
-Route::middleware(['auth', 'role:Manager,Direktur'])->group(function () {
-    Route::get('/approval/dashboard', function () {
-        return "Halaman Approval Bos";
-    })->name('approval.dashboard');
+// --- APPROVAL (SPV / Manager / Direktur) ---
+Route::middleware(['auth', 'role:SPV,Manager,Direktur'])->group(function () {
+    Route::get('/approval', [ApprovalController::class, 'index'])->name('approval.index');
+    Route::get('/approval/{submission}', [ApprovalController::class, 'show'])->name('approval.show');
+    Route::post('/approval/{submission}/approve', [ApprovalController::class, 'approve'])->name('approval.approve');
+    Route::post('/approval/{submission}/reject', [ApprovalController::class, 'reject'])->name('approval.reject');
 });
 
-// --- RUTE PROFIL BAWAAN BREEZE ---
+// --- FINANCE ---
+Route::middleware(['auth', 'role:Finance'])->group(function () {
+    Route::get('/finance', [FinanceController::class, 'index'])->name('finance.index');
+    Route::post('/finance/{submission}/pay', [FinanceController::class, 'pay'])->name('finance.pay');
+});
+
+// --- PROFIL BAWAAN BREEZE ---
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
