@@ -33,8 +33,6 @@ class WorkflowTest extends TestCase
         $this->makeCategory('Kecil', 5_000_000);
     }
 
-    // ---------- Helper ----------
-
     private function makeCategory(string $name, float $budget): Category
     {
         $c = Category::create(['name' => $name]);
@@ -71,8 +69,6 @@ class WorkflowTest extends TestCase
         $this->workflow->start($submission);
         return $submission->fresh();
     }
-
-    // ---------- 7 Kondisi Workflow ----------
 
     /** Kondisi 1: Kategori PO Produk langsung ke Direktur (berapa pun nominalnya) */
     public function test_po_produk_langsung_ke_direktur(): void
@@ -178,8 +174,6 @@ class WorkflowTest extends TestCase
         $this->assertFalse($this->workflow->pay($b->fresh(), $this->user('Finance')));
         $this->assertEquals(Submission::REJECTED, $b->fresh()->status);
     }
-
-    // ---------- RBAC (Security) ----------
 
     /** Staff tidak boleh membuka halaman approval */
     public function test_staff_dilarang_akses_approval(): void
