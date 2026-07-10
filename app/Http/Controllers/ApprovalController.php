@@ -37,7 +37,7 @@ class ApprovalController extends Controller
 
     public function approve(Request $request, Submission $submission)
     {
-        $this->authorizeStep($submission);
+        $this->authorize('act', $submission);
         $data = $request->validate(['comment' => 'nullable|string']);
 
         $this->workflow->approve($submission, Auth::user(), $data['comment'] ?? null);
@@ -48,22 +48,12 @@ class ApprovalController extends Controller
 
     public function reject(Request $request, Submission $submission)
     {
-        $this->authorizeStep($submission);
+        $this->authorize('act', $submission);
         $data = $request->validate(['comment' => 'required|string']);
 
         $this->workflow->reject($submission, Auth::user(), $data['comment']);
 
         return redirect()->route('approval.index')
             ->with('success', "Pengajuan {$submission->submission_no} ditolak.");
-    }
-
-    /** Pastikan role user memang yang sedang ditunggu untuk submission ini */
-    private function authorizeStep(Submission $submission): void
-    {
-        abort_unless(
-            $this->workflow->currentRole($submission) === Auth::user()->role->name,
-            403,
-            'Pengajuan ini bukan pada tahap persetujuan Anda.'
-        );
     }
 }
