@@ -81,6 +81,66 @@ Semua akun memakai password: **`password`**
 
 ## Struktur Database
 
+```mermaid
+erDiagram
+    roles ||--o{ users : "role_id"
+    users ||--o{ submissions : "user_id (pengaju)"
+    categories ||--o{ submissions : "category_id"
+    categories ||--|| budgets : "category_id"
+    submissions ||--o{ approvals : "submission_id"
+    users ||--o{ approvals : "user_id (approver)"
+    submissions ||--|| payments : "submission_id"
+    users ||--o{ payments : "paid_by (finance)"
+
+    roles {
+        bigint id PK
+        string name
+    }
+    users {
+        bigint id PK
+        string name
+        string email
+        string password
+        bigint role_id FK
+    }
+    categories {
+        bigint id PK
+        string name
+    }
+    budgets {
+        bigint id PK
+        bigint category_id FK
+        decimal amount
+    }
+    submissions {
+        bigint id PK
+        string submission_no
+        date date
+        bigint user_id FK
+        bigint category_id FK
+        decimal amount
+        text description
+        string attachment_path
+        string status
+    }
+    approvals {
+        bigint id PK
+        bigint submission_id FK
+        bigint user_id FK
+        string role
+        string status
+        text comment
+    }
+    payments {
+        bigint id PK
+        bigint submission_id FK
+        decimal amount
+        bigint paid_by FK
+        datetime paid_at
+        string note
+    }
+```
+
 | Tabel         | Keterangan                                                        |
 |---------------|-------------------------------------------------------------------|
 | `users`       | Akun pengguna, punya `role_id`                                    |
