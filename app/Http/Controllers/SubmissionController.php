@@ -2,10 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSubmissionRequest;
 use App\Models\Category;
 use App\Models\Submission;
 use App\Services\WorkflowService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class SubmissionController extends Controller
@@ -29,15 +29,9 @@ class SubmissionController extends Controller
         return view('staff.dashboard', compact('categories'));
     }
 
-    public function store(Request $request)
+    public function store(StoreSubmissionRequest $request)
     {
-        $validated = $request->validate([
-            'date'            => 'required|date',
-            'category_id'     => 'required|exists:categories,id',
-            'amount'          => 'required|numeric|min:1',
-            'description'     => 'required|string',
-            'attachment_path' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
-        ]);
+        $validated = $request->validated();
 
         $filePath = null;
         if ($request->hasFile('attachment_path')) {
@@ -45,7 +39,7 @@ class SubmissionController extends Controller
         }
 
         $submission = Submission::create([
-            'submission_no'   => 'REQ-' . date('Ymd') . '-' . str_pad(mt_rand(0, 9999), 4, '0', STR_PAD_LEFT),
+            'submission_no'   => 'REQ-' . date('Ymd') . '-' . str_pad((string) mt_rand(0, 9999), 4, '0', STR_PAD_LEFT),
             'date'            => $validated['date'],
             'user_id'         => Auth::id(),
             'category_id'     => $validated['category_id'],
@@ -63,10 +57,10 @@ class SubmissionController extends Controller
             ->with('success', 'Pengajuan berhasil dikirim. Status: ' . $submission->fresh()->status);
     }
 
-    /** Detail + timeline approval */
+    /** Detail + timeline approval (hanya milik sendiri, via Policy) */
     public function show(Submission $submission)
     {
-        abort_unless($submission->user_id === Auth::id(), 403);
+        $this->authorize('view', $submission);
 
         $submission->load('category', 'approvals.user', 'payment');
         return view('staff.submissions.show', compact('submission'));
