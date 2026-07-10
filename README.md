@@ -9,6 +9,7 @@ Aplikasi web untuk mengelola pengajuan transaksi pengeluaran dengan **workflow a
 - Workflow approval dinamis sesuai kategori & nominal
 - Pengecekan budget kategori & pemrosesan pembayaran oleh Finance
 - Riwayat & timeline approval per pengajuan
+- Dashboard statistik (jumlah per status, total dibayar, penggunaan budget per kategori)
 
 ## Teknologi
 
