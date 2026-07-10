@@ -1,44 +1,32 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800">Antrian Approval ({{ $role }})</h2>
+        <h1 class="h4 mb-0">Antrian Approval <span class="badge bg-secondary">{{ $role }}</span></h1>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                @if (session('success'))
-                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                        {{ session('success') }}
-                    </div>
-                @endif
+    @if (session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
 
-                <table class="w-full text-sm text-left">
-                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+    <div class="card shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr><th>No. Pengajuan</th><th>Pengaju</th><th>Kategori</th><th>Nominal</th><th>Aksi</th></tr>
+                </thead>
+                <tbody>
+                    @forelse ($submissions as $s)
                         <tr>
-                            <th class="px-4 py-3">No. Pengajuan</th>
-                            <th class="px-4 py-3">Pengaju</th>
-                            <th class="px-4 py-3">Kategori</th>
-                            <th class="px-4 py-3">Nominal</th>
-                            <th class="px-4 py-3">Aksi</th>
+                            <td class="fw-medium">{{ $s->submission_no }}</td>
+                            <td>{{ $s->user->name }}</td>
+                            <td>{{ $s->category->name }}</td>
+                            <td>Rp {{ number_format($s->amount, 0, ',', '.') }}</td>
+                            <td><a href="{{ route('approval.show', $s) }}" class="btn btn-sm btn-primary">Review</a></td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($submissions as $s)
-                            <tr class="border-b">
-                                <td class="px-4 py-3 font-medium">{{ $s->submission_no }}</td>
-                                <td class="px-4 py-3">{{ $s->user->name }}</td>
-                                <td class="px-4 py-3">{{ $s->category->name }}</td>
-                                <td class="px-4 py-3">Rp {{ number_format($s->amount, 0, ',', '.') }}</td>
-                                <td class="px-4 py-3">
-                                    <a href="{{ route('approval.show', $s) }}" class="text-blue-600 hover:underline">Review</a>
-                                </td>
-                            </tr>
-                        @empty
-                            <tr><td colspan="5" class="px-4 py-6 text-center text-gray-500">Tidak ada pengajuan yang menunggu persetujuan Anda.</td></tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                    @empty
+                        <tr><td colspan="5" class="text-center text-muted py-4">Tidak ada pengajuan yang menunggu persetujuan Anda.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 </x-app-layout>

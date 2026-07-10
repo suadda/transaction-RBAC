@@ -1,14 +1,14 @@
 @php
     $map = [
-        'Draft' => 'bg-gray-100 text-gray-700',
-        'Submitted' => 'bg-gray-100 text-gray-700',
-        'Waiting SPV Approval' => 'bg-yellow-100 text-yellow-800',
-        'Waiting Manager Approval' => 'bg-yellow-100 text-yellow-800',
-        'Waiting Director Approval' => 'bg-yellow-100 text-yellow-800',
-        'Waiting Finance' => 'bg-blue-100 text-blue-800',
-        'Paid' => 'bg-green-100 text-green-800',
-        'Rejected' => 'bg-red-100 text-red-800',
+        'Draft' => 'bg-secondary',
+        'Submitted' => 'bg-secondary',
+        'Waiting SPV Approval' => 'bg-warning text-dark',
+        'Waiting Manager Approval' => 'bg-warning text-dark',
+        'Waiting Director Approval' => 'bg-warning text-dark',
+        'Waiting Finance' => 'bg-info text-dark',
+        'Paid' => 'bg-success',
+        'Rejected' => 'bg-danger',
     ];
-    $cls = $map[$status] ?? 'bg-gray-100 text-gray-700';
+    $cls = $map[$status] ?? 'bg-secondary';
 @endphp
-<span class="inline-block px-2 py-1 text-xs font-semibold rounded {{ $cls }}">{{ $status }}</span>
+<span class="badge {{ $cls }}">{{ $status }}</span>
