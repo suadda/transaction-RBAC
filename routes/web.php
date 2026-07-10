@@ -1,22 +1,17 @@
 <?php
 
 use App\Http\Controllers\ApprovalController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Auth;
 
 Route::get('/', fn () => view('welcome'));
 
-Route::get('/dashboard', function () {
-    return redirect()->route(match (optional(Auth::user()->role)->name) {
-        'Staff'                => 'staff.submissions.index',
-        'SPV', 'Manager', 'Direktur' => 'approval.index',
-        'Finance'              => 'finance.index',
-        default                => 'profile.edit',
-    });
-})->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
 // --- STAFF ---
 Route::middleware(['auth', 'role:Staff'])->group(function () {

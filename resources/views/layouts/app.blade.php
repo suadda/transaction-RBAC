@@ -21,6 +21,7 @@
             </button>
             <div class="collapse navbar-collapse" id="navMain">
                 <ul class="navbar-nav me-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a></li>
                     @if ($role === 'Staff')
                         <li class="nav-item"><a class="nav-link" href="{{ route('staff.dashboard') }}">Buat Pengajuan</a></li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('staff.submissions.index') }}">Riwayat</a></li>
