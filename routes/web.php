@@ -6,8 +6,11 @@ use App\Http\Controllers\FinanceController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SubmissionController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
-Route::get('/', fn () => view('welcome'));
+Route::get('/', function () {
+    return redirect()->route(Auth::check() ? 'dashboard' : 'login');
+});
 
 Route::get('/dashboard', [DashboardController::class, 'index'])
     ->middleware(['auth', 'verified'])
