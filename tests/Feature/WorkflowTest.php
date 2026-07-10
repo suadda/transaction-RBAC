@@ -198,4 +198,38 @@ class WorkflowTest extends TestCase
             ->get('/finance')
             ->assertForbidden();
     }
+    /** Policy view: Staff tidak bisa melihat pengajuan milik Staff lain */
+    public function test_staff_tidak_bisa_lihat_pengajuan_orang_lain(): void
+    {
+        $owner = $this->user('Staff');
+        $other = $this->user('Staff');
+        $cat   = Category::where('name', 'Operasional')->firstOrFail();
+
+        $s = Submission::create([
+            'submission_no' => 'REQ-OWN-' . uniqid(),
+            'date'          => now(),
+            'user_id'       => $owner->id,
+            'category_id'   => $cat->id,
+            'amount'        => 1_000_000,
+            'description'   => 'milik owner',
+            'status'        => Submission::SUBMITTED,
+        ]);
+
+        $this->actingAs($other)
+            ->get("/staff/submissions/{$s->id}")
+            ->assertForbidden();
+    }
+
+    /** Policy act: approver di tahap yang salah tidak bisa approve */
+    public function test_approver_salah_tahap_tidak_bisa_bertindak(): void
+    {
+        // 8jt Operasional => rantai SPV lalu Manager; status awal Waiting SPV.
+        $s = $this->submit('Operasional', 8_000_000);
+        $this->assertEquals(Submission::WAITING_SPV, $s->status);
+
+        // Manager mencoba approve padahal giliran SPV => 403
+        $this->actingAs($this->user('Manager'))
+            ->post("/approval/{$s->id}/approve", ['comment' => 'coba'])
+            ->assertForbidden();
+    }
 }
