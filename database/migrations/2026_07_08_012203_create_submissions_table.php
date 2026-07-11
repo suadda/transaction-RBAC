@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('amount', 15, 2);
             $table->text('description');
             $table->string('attachment_path')->nullable();
-            $table->string('status')->default('pending');
+            $table->string('status')->default('Draft');
             $table->timestamps();
         });
     }
