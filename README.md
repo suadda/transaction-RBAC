@@ -13,7 +13,7 @@ Aplikasi web untuk mengelola pengajuan transaksi pengeluaran dengan **workflow a
 
 ## Teknologi
 
-- Laravel 12 (PHP 8.2+)
+- Laravel 13.19 (PHP 8.2+)
 - MySQL
 - Laravel Breeze (Blade)
 - Bootstrap 5 (via CDN) untuk seluruh halaman aplikasi
